@@ -1,4 +1,5 @@
 import { ThemeProvider } from "@/components/theme-provider";
+import { ContextProvider } from "@/context/useContext";
 import { UserProvider } from "@auth0/nextjs-auth0/client";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
@@ -26,7 +27,7 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            {children}
+            <ContextProvider>{children}</ContextProvider>
           </ThemeProvider>
         </UserProvider>
       </body>
