@@ -8,28 +8,39 @@ import {
   useState,
 } from "react";
 
+interface DisplayProps {
+  id: string;
+  ipAddress: string;
+  data: string;
+  ownerId: string;
+  isActive: boolean;
+}
+
 interface StateContextProps {
   displayCount: number | null;
   activeCount: number | null;
   inactiveCount: number | null;
-  loading: boolean;
+  displays: DisplayProps[] | null;
+  setDisplays: React.Dispatch<React.SetStateAction<DisplayProps[] | null>>;
 }
 
 const StateContext = createContext<StateContextProps>({
   displayCount: null,
   activeCount: null,
   inactiveCount: null,
-  loading: true,
+  displays: null,
+  setDisplays: () => {},
 });
 
 export const ContextProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const { user, isLoading } = useUser();
+  const { user } = useUser();
   const [displayCount, setDisplayCount] = useState<number | null>(null);
   const [activeCount, setActiveCount] = useState<number | null>(null);
   const [inactiveCount, setInactiveCount] = useState<number | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [displays, setDisplays] = useState<DisplayProps[] | null>(null);
+
   useEffect(() => {
     const fetchData = async () => {
       if (user && user.sub) {
@@ -47,14 +58,14 @@ export const ContextProvider: React.FC<{ children: ReactNode }> = ({
           const displayLength = data.length;
           setDisplayCount(displayLength);
           const activeCount = data.filter(
-            (display: { isActive: any }) => display.isActive
+            (display: DisplayProps) => display.isActive
           ).length;
           setActiveCount(activeCount);
 
           const inactiveCount = displayLength - activeCount;
           setInactiveCount(inactiveCount);
-          setLoading(false);
-          console.log(data);
+
+          setDisplays(data);
         } catch (error) {
           console.error("Error fetching data:", error);
         }
@@ -66,7 +77,13 @@ export const ContextProvider: React.FC<{ children: ReactNode }> = ({
 
   return (
     <StateContext.Provider
-      value={{ displayCount, activeCount, inactiveCount, loading }}
+      value={{
+        displayCount,
+        activeCount,
+        displays,
+        inactiveCount,
+        setDisplays,
+      }}
     >
       {children}
     </StateContext.Provider>

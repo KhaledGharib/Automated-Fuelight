@@ -12,9 +12,7 @@ export default function Nav() {
       <div className="bg-yellow-100 w-full p-3 flex justify-between items-center">
         <p className="font-bold text-4xl text-black">LOGO</p>
         <Link href="/api/auth/login">
-          <Button className="dark:bg-slate-800 dark:text-white">
-            Login in
-          </Button>
+          <Button className="dark:bg-slate-800 dark:text-white">Login</Button>
         </Link>
       </div>
     </>

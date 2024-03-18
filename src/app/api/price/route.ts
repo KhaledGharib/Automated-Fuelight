@@ -5,13 +5,13 @@ const prisma = new PrismaClient();
 export async function POST(req: NextRequest) {
   // return new Response(price);
   try {
-    const { name, location, price, ownerId } = await req.json();
+    const { displayName, displayLocation, displayPrice, ownerId } =
+      await req.json();
     const priceData = {
-      ipAddress: name,
-      location,
+      ipAddress: displayName,
+      location: displayLocation,
       ownerId,
-      data: price,
-      isActive: true,
+      data: displayPrice,
     };
 
     const createdPrice = await prisma.display.create({ data: priceData });
