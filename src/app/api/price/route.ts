@@ -3,15 +3,15 @@ import { NextRequest } from "next/server";
 
 const prisma = new PrismaClient();
 export async function POST(req: NextRequest) {
-  // return new Response(price);
   try {
-    const { name, location, price, ownerId } = await req.json();
+    const { ownerId, location, ipAddress, data, displayName } =
+      await req.json();
     const priceData = {
-      ipAddress: name,
+      ipAddress,
       location,
       ownerId,
-      data: price,
-      isActive: true,
+      data,
+      displayName,
     };
 
     const createdPrice = await prisma.display.create({ data: priceData });
