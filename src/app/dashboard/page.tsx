@@ -41,7 +41,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useStateContext } from "@/context/useContext";
+import { DisplayProps, useStateContext } from "@/context/useContext";
 import { useUser } from "@auth0/nextjs-auth0/client";
 import {
   DocumentTextIcon,
@@ -49,13 +49,7 @@ import {
   PlusCircleIcon,
 } from "@heroicons/react/24/solid";
 import { useEffect, useState } from "react";
-interface DisplayProps {
-  id: string;
-  ipAddress: string;
-  data: string;
-  ownerId: string;
-  isActive: boolean;
-}
+
 interface Display {
   ownerId: string;
   name: string;
@@ -69,7 +63,9 @@ export default function Dashboard() {
   const [displayName, setDisplayName] = useState<string>("");
   const [displayPrice, setDisplayPrice] = useState<string>("");
   const [displayLocation, setDisplayLocation] = useState<string>("");
-  // const { displays, setDisplays } = useStateContext();
+  const [selectedDisplay, setSelectedDisplay] = useState<DisplayProps | null>(
+    null
+  );
 
   const [display, setDisplay] = useState<Display>({
     ownerId: "",
@@ -87,9 +83,11 @@ export default function Dashboard() {
         },
         body: JSON.stringify({
           ownerId,
-          displayName,
-          displayLocation,
-          displayPrice,
+          displayName: selectedDisplay?.displayName,
+          location: selectedDisplay?.location,
+          data: selectedDisplay?.data,
+          ipAddress: selectedDisplay?.ipAddress,
+          isActive: selectedDisplay?.isActive,
         }),
       });
 
@@ -135,14 +133,19 @@ export default function Dashboard() {
           </Table>
         </div>
         <div className="bg-[#95CFDA] md:col-span-2 rounded-2xl p-3">
-          <p>chart</p>
+          <p>Map</p>
         </div>
       </div>
       <div className="bg-[#D9BDA7] mt-auto rounded-2xl p-3">
         <div className="flex justify-between items-center p-2">
           <p className="font-medium text-2xl">Recent Added</p>
           <Dialog>
-            <DialogTrigger className="bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80 px-4 py-2 rounded-md ">
+            <DialogTrigger
+              className="bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80 px-4 py-2 rounded-sm"
+              onClick={() => {
+                setSelectedDisplay(null);
+              }}
+            >
               Add new Display
             </DialogTrigger>
             <DialogContent>
@@ -154,35 +157,65 @@ export default function Dashboard() {
                     id="name"
                     name="name"
                     placeholder="Enter Display Name"
-                    value={displayName}
-                    onChange={(e) => {
-                      setDisplayName(e.target.value);
-                    }}
+                    value={selectedDisplay?.displayName}
+                    onChange={(e) =>
+                      setSelectedDisplay((prevDisplay: any) => ({
+                        ...prevDisplay,
+                        displayName: e.target.value,
+                      }))
+                    }
                   />
                   <Label htmlFor="location">Location:</Label>
                   <Input
                     id="location"
                     name="location"
                     placeholder="Enter Location"
-                    value={displayLocation}
-                    onChange={(e) => {
-                      setDisplayLocation(e.target.value);
-                    }}
+                    value={selectedDisplay?.location}
+                    onChange={(e) =>
+                      setSelectedDisplay((prevDisplay: any) => ({
+                        ...prevDisplay,
+                        location: e.target.value,
+                      }))
+                    }
+                  />
+                  <Label htmlFor="IP Address">IP Address</Label>
+                  <Input
+                    id="IP Address"
+                    name="IP Address"
+                    placeholder="IP Address"
+                    value={selectedDisplay?.ipAddress}
+                    onChange={(e) =>
+                      setSelectedDisplay((prevDisplay: any) => ({
+                        ...prevDisplay,
+                        ipAddress: e.target.value,
+                      }))
+                    }
                   />
                   <Label htmlFor="price">Price:</Label>
                   <Input
                     id="price"
                     name="price"
-                    placeholder="Enter Price"
+                    placeholder="Enter Price (e.g., 00.00)"
+                    value={selectedDisplay?.data}
                     onChange={(e) => {
-                      const price = e.target.value;
-                      const isValidInput = /^-?\d*\.?\d*$/.test(price);
-                      if (isValidInput || price === "") {
-                        setDisplayPrice(price);
+                      let price = e.target.value;
+
+                      price = price.replace(/[^0-9.]/g, "");
+
+                      if (/^\d{2}$/.test(price)) {
+                        price = price + ".";
+                      }
+                      const hasMultipleDecimals = price.split(".").length > 2;
+                      const isValidFormat = /^\d{0,2}(\.\d{0,2})?$/.test(price);
+                      if (!hasMultipleDecimals && isValidFormat) {
+                        setSelectedDisplay((prevDisplay: any) => ({
+                          ...prevDisplay,
+                          data: price,
+                        }));
                       }
                     }}
-                    value={displayPrice}
                   />
+
                   <Button onClick={handelSubmit} type="submit">
                     Add
                   </Button>
@@ -207,8 +240,8 @@ export default function Dashboard() {
                 >
                   <Card className="bg-[#F9F4F0] border-none text-[#101323]">
                     <CardHeader>
-                      <CardTitle>{item.ipAddress}</CardTitle>
-                      <CardDescription>{item.id}</CardDescription>
+                      <CardTitle>{item.displayName}</CardTitle>
+                      <CardDescription>{item.location}</CardDescription>
                     </CardHeader>
                     <CardContent>
                       <p>{item.ipAddress}</p>

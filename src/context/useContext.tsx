@@ -8,12 +8,14 @@ import {
   useState,
 } from "react";
 
-interface DisplayProps {
+export interface DisplayProps {
   id: string;
   ipAddress: string;
   data: string;
   ownerId: string;
   isActive: boolean;
+  location: string;
+  displayName: string;
 }
 
 interface StateContextProps {

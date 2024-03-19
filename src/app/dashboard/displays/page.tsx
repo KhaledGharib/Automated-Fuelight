@@ -19,36 +19,18 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useStateContext } from "@/context/useContext";
+import { DisplayProps, useStateContext } from "@/context/useContext";
 import { useUser } from "@auth0/nextjs-auth0/client";
 import Link from "next/link";
 import { useState } from "react";
-interface DisplayProps {
-  id: string;
-  ipAddress: string;
-  data: string;
-  ownerId: string;
-  isActive: boolean;
-}
-interface Display {
-  ownerId: string;
-  name: string;
-  location: string;
-  price: string;
-}
+
 export default function Displays() {
   const { displays, setDisplays } = useStateContext();
-  const { user } = useUser();
-  const [displayName, setDisplayName] = useState<string>("");
-  const [displayPrice, setDisplayPrice] = useState<string>("");
-  const [displayLocation, setDisplayLocation] = useState<string>("");
-  const [display, setDisplay] = useState<Display>({
-    ownerId: "",
-    name: "",
-    location: "",
-    price: "",
-  });
+  const [selectedDisplay, setSelectedDisplay] = useState<DisplayProps | null>(
+    null
+  );
 
+  const { user } = useUser();
   const handelDelete = async (displayID: string) => {
     if (user && user.sub && displays) {
       const ownerId = user.sub.replace("auth0|", "");
@@ -81,13 +63,15 @@ export default function Displays() {
         },
         body: JSON.stringify({
           ownerId,
-          displayName,
-          displayLocation,
-          displayPrice,
+          displayName: selectedDisplay?.displayName,
+          location: selectedDisplay?.location,
+          data: selectedDisplay?.data,
+          ipAddress: selectedDisplay?.ipAddress,
+          isActive: selectedDisplay?.isActive,
         }),
       });
 
-      if (response.ok && display) {
+      if (response.ok) {
         const newDisplay = await response.json();
         console.log(newDisplay.data);
         setDisplays([...displays, newDisplay.data]);
@@ -97,11 +81,50 @@ export default function Displays() {
       }
     }
   };
+  const handleUpdate = async () => {
+    if (user && user.sub && selectedDisplay) {
+      try {
+        const ownerId = user.sub.replace("auth0|", "");
+        const response = await fetch("/api/update", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            ownerId,
+            displayID: selectedDisplay.id,
+            displayName: selectedDisplay.displayName,
+            location: selectedDisplay.location,
+            data: selectedDisplay.data,
+            ipAddress: selectedDisplay.ipAddress,
+          }),
+        });
+
+        if (response.ok) {
+          const updatedDisplay = await response.json();
+          const updatedDisplays = displays?.map((display: DisplayProps) =>
+            display.id === updatedDisplay.id ? updatedDisplay : display
+          );
+          setDisplays(updatedDisplays ?? []);
+        } else {
+          const errorData = await response.json();
+          console.error("Error updating display:", errorData.error);
+        }
+      } catch (error) {
+        console.error("Error updating display:", error);
+      }
+    }
+  };
 
   return (
     <div>
       <Dialog>
-        <DialogTrigger className="bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80 px-4 py-2 rounded-sm ">
+        <DialogTrigger
+          className="bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80 px-4 py-2 rounded-sm"
+          onClick={() => {
+            setSelectedDisplay(null);
+          }}
+        >
           Add new Display
         </DialogTrigger>
         <DialogContent>
@@ -113,35 +136,67 @@ export default function Displays() {
                 id="name"
                 name="name"
                 placeholder="Enter Display Name"
-                value={displayName}
-                onChange={(e) => {
-                  setDisplayName(e.target.value);
-                }}
+                value={selectedDisplay?.displayName}
+                onChange={(e) =>
+                  setSelectedDisplay((prevDisplay: any) => ({
+                    ...prevDisplay,
+                    displayName: e.target.value,
+                  }))
+                }
               />
               <Label htmlFor="location">Location:</Label>
               <Input
                 id="location"
                 name="location"
                 placeholder="Enter Location"
-                value={displayLocation}
-                onChange={(e) => {
-                  setDisplayLocation(e.target.value);
-                }}
+                value={selectedDisplay?.location}
+                onChange={(e) =>
+                  setSelectedDisplay((prevDisplay: any) => ({
+                    ...prevDisplay,
+                    location: e.target.value,
+                  }))
+                }
+              />
+              <Label htmlFor="IP Address">IP Address</Label>
+              <Input
+                id="IP Address"
+                name="IP Address"
+                placeholder="IP Address"
+                value={selectedDisplay?.ipAddress}
+                onChange={(e) =>
+                  setSelectedDisplay((prevDisplay: any) => ({
+                    ...prevDisplay,
+                    ipAddress: e.target.value,
+                  }))
+                }
               />
               <Label htmlFor="price">Price:</Label>
               <Input
                 id="price"
                 name="price"
-                placeholder="Enter Price"
+                placeholder="Enter Price (e.g., 00.00)"
+                value={selectedDisplay?.data}
                 onChange={(e) => {
-                  const price = e.target.value;
-                  const isValidInput = /^-?\d*\.?\d*$/.test(price);
-                  if (isValidInput || price === "") {
-                    setDisplayPrice(price);
+                  let price = e.target.value;
+
+                  price = price.replace(/[^0-9.]/g, "");
+
+                  if (/^\d{2}$/.test(price)) {
+                    price = price + ".";
+                  }
+                  const hasMultipleDecimals = price.split(".").length > 2;
+
+                  const isValidFormat = /^\d{0,2}(\.\d{0,2})?$/.test(price);
+
+                  if (!hasMultipleDecimals && isValidFormat) {
+                    setSelectedDisplay((prevDisplay: any) => ({
+                      ...prevDisplay,
+                      data: price,
+                    }));
                   }
                 }}
-                value={displayPrice}
               />
+
               <Button onClick={handelSubmit} type="submit">
                 Add
               </Button>
@@ -161,18 +216,93 @@ export default function Displays() {
           <TableBody>
             {displays.map((data: DisplayProps) => (
               <TableRow key={data.id}>
-                <TableCell className="text-left">{data.ipAddress}</TableCell>
+                <TableCell className="text-left">{data.location}</TableCell>
                 <TableCell className="font-medium text-center  gap-2">
                   <div className="flex items-center justify-center gap-3">
-                    <Button>Edit</Button>
                     <Button
                       onClick={() => {
-                        handelDelete(data.id!);
+                        handelDelete(data.id);
                       }}
                     >
                       Delete
                     </Button>
-                    <Button>Update</Button>
+                    <Dialog>
+                      <DialogTrigger
+                        asChild
+                        onClick={() => {
+                          setSelectedDisplay(data);
+                        }}
+                      >
+                        <Button>Edit</Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Add new Fuelight</DialogTitle>
+                          <DialogDescription>
+                            <Label htmlFor="name">Display Name:</Label>
+                            <Input
+                              id="name"
+                              name="name"
+                              placeholder="Enter Display Name"
+                              value={selectedDisplay?.displayName}
+                              onChange={(e) =>
+                                setSelectedDisplay((prevDisplay: any) => ({
+                                  ...prevDisplay,
+                                  displayName: e.target.value,
+                                }))
+                              }
+                            />
+                            <Label htmlFor="location">Location:</Label>
+                            <Input
+                              id="location"
+                              name="location"
+                              placeholder="Enter Location"
+                              value={selectedDisplay?.location}
+                              onChange={(e) =>
+                                setSelectedDisplay((prevDisplay: any) => ({
+                                  ...prevDisplay,
+                                  location: e.target.value,
+                                }))
+                              }
+                            />
+                            <Label htmlFor="IP Address">IP Address</Label>
+                            <Input
+                              id="IP Address"
+                              name="IP Address"
+                              placeholder="IP Address"
+                              value={selectedDisplay?.ipAddress}
+                              onChange={(e) =>
+                                setSelectedDisplay((prevDisplay: any) => ({
+                                  ...prevDisplay,
+                                  ipAddress: e.target.value,
+                                }))
+                              }
+                            />
+                            <Label htmlFor="price">Price:</Label>
+                            <Input
+                              id="price"
+                              name="price"
+                              placeholder="Enter Price"
+                              value={selectedDisplay?.data}
+                              onChange={(e) =>
+                                setSelectedDisplay((prevDisplay: any) => ({
+                                  ...prevDisplay,
+                                  data: e.target.value,
+                                }))
+                              }
+                            />
+                            <Button
+                              onClick={() => {
+                                handleUpdate();
+                              }}
+                              type="submit"
+                            >
+                              Add
+                            </Button>
+                          </DialogDescription>
+                        </DialogHeader>
+                      </DialogContent>
+                    </Dialog>
                   </div>
                 </TableCell>
               </TableRow>
