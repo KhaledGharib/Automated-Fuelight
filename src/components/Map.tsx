@@ -1,4 +1,10 @@
 import { DisplayProps } from "@/context/useContext";
+import {
+  faCircleStop,
+  faGasPump,
+  faMagnifyingGlass,
+} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { MapPinIcon } from "@heroicons/react/24/solid";
 import {
   GoogleMap,
@@ -19,7 +25,11 @@ const center = {
   lat: 24.6732514,
   lng: 46.622941,
 };
-
+const mapOptions = {
+  center: center,
+  zoom: 5,
+  streetViewControl: false,
+};
 interface MapProps {
   pins: DisplayProps[];
 }
@@ -38,12 +48,7 @@ const MapComponent: React.FC<MapProps> = ({ pins }) => {
   const [selectedPin, setSelectedPin] = useState<DisplayProps | null>(null);
 
   return isLoaded ? (
-    <GoogleMap
-      mapContainerStyle={containerStyle}
-      center={center}
-      zoom={5}
-      onLoad={onLoad}
-    >
+    <GoogleMap mapContainerStyle={containerStyle} options={mapOptions}>
       {pins.map((pin) => (
         <Marker
           key={pin.id}
@@ -52,12 +57,15 @@ const MapComponent: React.FC<MapProps> = ({ pins }) => {
         >
           {selectedPin === pin && (
             <InfoWindow onCloseClick={() => setSelectedPin(null)}>
-              <div className="text-black">
-                <p className="flex justify-center items-center">
+              <div className="text-black flex flex-col justify-start ">
+                <p className="flex  gap-1 items-center">
                   <MapPinIcon className="w-5 h-5" />
                   {pin.location}
                 </p>
-                <p>{pin.displayName}</p>
+                <div className="flex justify-center gap-1 items-center">
+                  <FontAwesomeIcon icon={faGasPump} className="w-5 h-5" />
+                  <p>{pin.displayName}</p>
+                </div>
               </div>
             </InfoWindow>
           )}

@@ -1,7 +1,7 @@
 import Side from "@/components/Sdie";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-
+import { SpeedInsights } from "@vercel/speed-insights/next";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -20,6 +20,7 @@ export default function RootLayout({
         <Side />
         <div className="bg-[#F2F1EF] rounded-l-3xl w-full p-10 shadow-inner ">
           {children}
+          <SpeedInsights />
         </div>
       </div>
     </>
