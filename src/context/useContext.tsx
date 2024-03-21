@@ -68,7 +68,6 @@ export const ContextProvider: React.FC<{ children: ReactNode }> = ({
 
           const inactiveCount = displayLength - activeCount;
           setInactiveCount(inactiveCount);
-
           setDisplays(data);
         } catch (error) {
           console.error("Error fetching data:", error);

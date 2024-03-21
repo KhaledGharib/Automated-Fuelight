@@ -22,7 +22,7 @@ export default function Dashboard() {
         </div>
         <div className="bg-[#95CFDA] md:col-span-2 rounded-2xl ">
           <div className="p-3">
-            <MapComponent pins={displays ?? []} />
+            <MapComponent pins={displays || []} />
           </div>
         </div>
       </div>

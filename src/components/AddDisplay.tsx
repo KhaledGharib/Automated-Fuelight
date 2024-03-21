@@ -15,6 +15,8 @@ import { useState } from "react";
 import PlacesAutocomplete from "./Places";
 
 export default function AddDisplay() {
+  const [open, setOpen] = useState(false);
+
   const [selectedDisplay, setSelectedDisplay] = useState<DisplayProps | null>(
     null
   );
@@ -102,15 +104,17 @@ export default function AddDisplay() {
       if (response.ok && newDisplay.message === "Created") {
         console.log(newDisplay.message);
         setDisplays([...displays, newDisplay.data]);
+        setOpen(false);
         setSelectedDisplay(null);
       } else {
         console.error("Error deleting display:", newDisplay.message);
       }
     }
   };
+
   return (
     <>
-      <Dialog>
+      <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger
           asChild
           onClick={() => {
