@@ -1,10 +1,10 @@
 "use client";
+import Content from "@/components/Content";
 import { ModeToggle } from "@/components/ModeToggle";
+import Nav from "@/components/Nav";
 import { useUser } from "@auth0/nextjs-auth0/client";
 import Image from "next/image";
 import { redirect } from "next/navigation";
-import Content from "./components/Content";
-import Nav from "./components/Nav";
 
 export default function Home() {
   const { user } = useUser();
