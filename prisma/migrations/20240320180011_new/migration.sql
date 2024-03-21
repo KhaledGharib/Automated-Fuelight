@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "display" ALTER COLUMN "ipAddress" DROP DEFAULT,
+ALTER COLUMN "ownerId" DROP DEFAULT,
+ALTER COLUMN "displayName" DROP DEFAULT;
