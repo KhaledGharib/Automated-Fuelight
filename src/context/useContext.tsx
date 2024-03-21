@@ -16,6 +16,8 @@ export interface DisplayProps {
   isActive: boolean;
   location: string;
   displayName: string;
+  lat: number;
+  lng: number;
 }
 
 interface StateContextProps {

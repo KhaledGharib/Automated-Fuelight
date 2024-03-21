@@ -22,11 +22,14 @@ datasource db {
 
 model display {
   id          String   @id @default(uuid())
-  ipAddress   String   @db.VarChar(45) @default("")
-  data        Json?
-  displayName String   @default("")
-  ownerId     String   @default("")    
+  ipAddress   String   @db.VarChar(45) 
+  data        Json?    
+  displayName String   
+  ownerId     String   
   isActive    Boolean  @default(false)
-  location    String
+  location    String   
+  lat         Float   
+  lng         Float
   createdAt   DateTime @default(now())
+
 }

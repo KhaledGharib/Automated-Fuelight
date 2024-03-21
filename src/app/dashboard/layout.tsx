@@ -1,9 +1,6 @@
-import { ThemeProvider } from "@/components/theme-provider";
-import { UserProvider } from "@auth0/nextjs-auth0/client";
+import Side from "@/components/Sdie";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import LNav from "../components/loged/LNav";
-import Side from "../newCompmnents/Sdie";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,7 +16,6 @@ export default function RootLayout({
 }>) {
   return (
     <>
-      {/* <LNav /> */}
       <div className="flex bg-white min-h-screen overflow-y-hidden">
         <Side />
         <div className="bg-[#F2F1EF] rounded-l-3xl w-full p-10 shadow-inner ">
