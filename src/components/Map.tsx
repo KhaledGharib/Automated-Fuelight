@@ -26,8 +26,8 @@ interface MapProps {
 
 const MapComponent: React.FC<MapProps> = ({ pins }) => {
   const { isLoaded } = useJsApiLoader({
-    id: "google-map-script",
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,
+    libraries: ["places"],
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY as string,
   });
 
   const [map, setMap] = useState(null);
